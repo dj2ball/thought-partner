@@ -1,0 +1,29 @@
+{
+  "user_id": "demo-user",
+  "goals": [
+    "Brainstorm ideas",
+    "Plan projects",
+    "Design systems",
+    "Research topics"
+  ],
+  "domains": [
+    "Technology",
+    "Business"
+  ],
+  "preferred_tone": "neutral",
+  "detail": "standard",
+  "output_formats": [
+    "markdown"
+  ],
+  "style_notes": "",
+  "cognitive": {
+    "divergent": 50,
+    "big_picture": 50,
+    "speed_over_evidence": 50,
+    "risk_tolerance": 50,
+    "visual_pref": 50
+  },
+  "constraints": {},
+  "step_by_step": true,
+  "wants_citations": false
+}

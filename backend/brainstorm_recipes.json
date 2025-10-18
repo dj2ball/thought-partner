@@ -1,0 +1,508 @@
+[
+  {
+    "id": "multi_agent_debate",
+    "name": "Multi-Agent Debate (Optimist vs Skeptic \u2192 Mediator)",
+    "description": "True multi-step loop: Optimist proposes, Skeptic critiques, Mediator reconciles and updates state.",
+    "inputs": [
+      "problem",
+      "loops=3"
+    ],
+    "system_prompt": "Avoid sycophancy. Roles must disagree when warranted. The mediator must justify trade-offs explicitly.",
+    "user_prompt_template": "We will run {loops} loops of expert debate on: {problem}",
+    "response_format": {
+      "type": "object"
+    },
+    "run_mode": "iterative",
+    "iterative": {
+      "language_guardrails": "Language guardrails: Do not flatter or mirror the user. Vary stance and vocabulary. Prefer evidence and counter-examples over agreement.",
+      "default_loops": 3,
+      "max_loops": 10,
+      "substeps": [
+        {
+          "role": "Optimist",
+          "prompt": "Role: {role}. Loop {loop}. Current state: {state}. Task: Propose 2 bold opportunities for the problem in {params}. Return JSON: {\"proposals\":[{\"title\":\"...\",\"why\":\"...\"}],\"next_state\":{\"last_optimist\":\"summary of proposals\"}}"
+        },
+        {
+          "role": "Skeptic",
+          "prompt": "Role: {role}. Loop {loop}. Current state: {state}. Task: Critique the Optimist's proposals. Return JSON: {\"critiques\":[{\"target\":\"title\",\"risk\":\"...\",\"evidence\":\"...\"}],\"next_state\":{\"risks\":\"key risks\"}}"
+        },
+        {
+          "role": "Mediator",
+          "prompt": "Role: {role}. Loop {loop}. Current state: {state}. Task: Reconcile proposals and critiques; output 2 synthesized directions with explicit trade-offs, and update next_state. Return JSON: {\"synthesis\":[{\"direction\":\"...\",\"trade_off\":\"...\"}],\"next_state\":{\"accepted\":\"...\",\"open_question\":\"...\"}}"
+        }
+      ],
+      "step_response_schema": {
+        "type": "object",
+        "properties": {
+          "synthesis": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "direction": {
+                  "type": "string"
+                },
+                "trade_off": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "direction",
+                "trade_off"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "next_state": {
+            "type": "object",
+            "properties": {
+              "accepted": {
+                "type": "string"
+              },
+              "open_question": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "accepted",
+              "open_question"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "synthesis",
+          "next_state"
+        ],
+        "additionalProperties": false
+      },
+      "initial_state": {
+        "accepted": "{problem}",
+        "open_question": "What risk could derail this?",
+        "debate_history": []
+      },
+      "final_synthesis": {
+        "enabled": true,
+        "summary_builder": "debate_format",
+        "prompt": "You are a Strategic Advisor reviewing the complete multi-loop debate about: {problem}\n\nDEBATE HISTORY:\n{iteration_summary}\n\nFINAL STATE:\n{final_state}\n\nTask: Create a comprehensive final synthesis that:\n1. Summarizes the key insights from all debate loops\n2. Identifies the strongest opportunities that survived scrutiny\n3. Highlights critical risks and mitigation strategies\n4. Provides 2-3 concrete next steps\n\nReturn JSON with this structure: {\"executive_summary\":\"...\",\"validated_opportunities\":[{\"title\":\"...\",\"rationale\":\"...\",\"risks\":\"...\"}],\"critical_insights\":[\"...\"],\"recommended_actions\":[{\"action\":\"...\",\"priority\":\"high|medium|low\",\"timeline\":\"...\"}]}",
+        "response_schema": {
+          "type": "object",
+          "properties": {
+            "executive_summary": {
+              "type": "string"
+            },
+            "validated_opportunities": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "rationale": {
+                    "type": "string"
+                  },
+                  "risks": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "rationale",
+                  "risks"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "critical_insights": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "recommended_actions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "action": {
+                    "type": "string"
+                  },
+                  "priority": {
+                    "type": "string",
+                    "enum": [
+                      "high",
+                      "medium",
+                      "low"
+                    ]
+                  },
+                  "timeline": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "action",
+                  "priority",
+                  "timeline"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "executive_summary",
+            "validated_opportunities",
+            "critical_insights",
+            "recommended_actions"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "ui_preferences": {
+      "render_as_markdown": true
+    }
+  },
+  {
+    "id": "mind_mapping",
+    "name": "Mind Mapping (Parallel Branching)",
+    "description": "Generate a comprehensive mind map by exploring different aspects in parallel branches",
+    "inputs": [
+      {
+        "name": "topic",
+        "prompt": "What topic would you like to create a mind map for?",
+        "type": "text",
+        "required": true,
+        "examples": [
+          "Sustainable energy solutions",
+          "Remote work strategies",
+          "AI in healthcare"
+        ]
+      },
+      {
+        "name": "depth",
+        "prompt": "How many levels deep should the mind map go?",
+        "type": "integer",
+        "required": false,
+        "default": 3,
+        "range": [
+          2,
+          5
+        ]
+      }
+    ],
+    "system_prompt": "You are a creative ideation expert specializing in mind mapping. Generate comprehensive, well-structured ideas that connect concepts logically.",
+    "user_prompt_template": "Create a mind map for: {topic}",
+    "workflow": {
+      "type": "parallel",
+      "parallel": {
+        "mode": "branching",
+        "branches": [
+          {
+            "name": "core_concepts",
+            "prompt": "Topic: {topic}\n\nIdentify 4-6 core concepts or main branches that relate to this topic. For each concept, provide a brief description and 2-3 sub-concepts.\n\nReturn JSON with this structure: {\"branch_name\": \"Core Concepts\", \"concepts\": [{\"name\": \"concept name\", \"description\": \"brief description\", \"sub_concepts\": [\"sub1\", \"sub2\"]}]}",
+            "temperature": 0.7,
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "branch_name": {
+                  "type": "string"
+                },
+                "concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "sub_concepts": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "description",
+                      "sub_concepts"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "branch_name",
+                "concepts"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "practical_applications",
+            "prompt": "Topic: {topic}\n\nExplore practical applications, use cases, and real-world implementations of this topic. Think about how it applies in different industries or contexts.\n\nReturn JSON with this structure: {\"branch_name\": \"Practical Applications\", \"applications\": [{\"context\": \"industry/domain\", \"use_case\": \"specific application\", \"benefits\": [\"benefit1\", \"benefit2\"]}]}",
+            "temperature": 0.8,
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "branch_name": {
+                  "type": "string"
+                },
+                "applications": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "context": {
+                        "type": "string"
+                      },
+                      "use_case": {
+                        "type": "string"
+                      },
+                      "benefits": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "context",
+                      "use_case",
+                      "benefits"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "branch_name",
+                "applications"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "challenges_opportunities",
+            "prompt": "Topic: {topic}\n\nIdentify key challenges, opportunities, and future trends related to this topic. Think about obstacles, potential solutions, and emerging possibilities.\n\nReturn JSON with this structure: {\"branch_name\": \"Challenges & Opportunities\", \"items\": [{\"type\": \"challenge|opportunity|trend\", \"title\": \"brief title\", \"description\": \"detailed description\", \"impact\": \"high|medium|low\"}]}",
+            "temperature": 0.6,
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "branch_name": {
+                  "type": "string"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "challenge",
+                          "opportunity",
+                          "trend"
+                        ]
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "impact": {
+                        "type": "string",
+                        "enum": [
+                          "high",
+                          "medium",
+                          "low"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "title",
+                      "description",
+                      "impact"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "branch_name",
+                "items"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "name": "connections_relationships",
+            "prompt": "Topic: {topic}\n\nExplore connections and relationships between this topic and other domains, concepts, or fields. Think about interdisciplinary links and cross-pollination opportunities.\n\nReturn JSON with this structure: {\"branch_name\": \"Connections & Relationships\", \"connections\": [{\"related_field\": \"field name\", \"relationship_type\": \"influences|depends_on|complements|conflicts\", \"explanation\": \"how they relate\"}]}",
+            "temperature": 0.9,
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "branch_name": {
+                  "type": "string"
+                },
+                "connections": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "related_field": {
+                        "type": "string"
+                      },
+                      "relationship_type": {
+                        "type": "string",
+                        "enum": [
+                          "influences",
+                          "depends_on",
+                          "complements",
+                          "conflicts"
+                        ]
+                      },
+                      "explanation": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "related_field",
+                      "relationship_type",
+                      "explanation"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "branch_name",
+                "connections"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ],
+        "synthesis": {
+          "prompt": "Based on the parallel exploration of {topic}, synthesize all branches into a comprehensive mind map structure.\n\nParallel Results:\n{parallel_results}\n\nCreate a unified mind map that:\n1. Organizes all concepts hierarchically\n2. Shows connections between different branches\n3. Highlights the most important insights\n4. Provides a clear visual structure\n\nReturn JSON with the complete mind map structure.",
+          "response_schema": {
+            "type": "object",
+            "properties": {
+              "central_topic": {
+                "type": "string"
+              },
+              "main_branches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "color": {
+                      "type": "string"
+                    },
+                    "sub_branches": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "details": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "connections": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "details",
+                          "connections"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "color",
+                    "sub_branches"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "key_insights": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "cross_connections": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "relationship": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to",
+                    "relationship"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "central_topic",
+              "main_branches",
+              "key_insights",
+              "cross_connections"
+            ],
+            "additionalProperties": false
+          }
+        }
+      }
+    },
+    "meta": {
+      "complexity": "intermediate",
+      "time_estimate": "3-5 minutes",
+      "tags": [
+        "visual",
+        "brainstorming",
+        "structure",
+        "parallel"
+      ],
+      "works_well_with": [
+        "lotus_blossom",
+        "crazy_8s"
+      ]
+    },
+    "ui_preferences": {
+      "render_as_markdown": false
+    }
+  }
+]

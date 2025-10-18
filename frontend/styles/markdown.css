@@ -1,0 +1,20 @@
+/* Dark theme markdown styling */
+.markdown-body{font-family:Inter,system-ui,sans-serif;line-height:1.65;font-size:.96rem;color:var(--text);background:transparent;padding:0;border-radius:0;box-shadow:none}
+.markdown-body h2{font-size:1.25rem;font-weight:600;color:var(--accent);margin-top:1.4rem;border-bottom:1px solid rgba(124,92,255,.3);padding-bottom:.25rem}
+.markdown-body h3{font-size:1.1rem;font-weight:600;margin-top:1rem;color:#a78bfa}
+.markdown-body p{margin:.45rem 0;color:var(--text)}
+.markdown-body strong{color:#f2f2f7;font-weight:600}
+.markdown-body em{color:var(--muted);font-style:italic}
+.markdown-body blockquote{border-left:3px solid var(--accent);padding-left:.85rem;color:var(--muted);font-style:italic;background:rgba(124,92,255,.08);border-radius:4px;margin:.6rem 0}
+.markdown-body code{background:rgba(124,92,255,.15);padding:2px 6px;border-radius:4px;font-family:ui-monospace,monospace;color:#c9a9ff;border:1px solid rgba(124,92,255,.2)}
+.markdown-body pre{background:#0d0d11;border-radius:8px;padding:.75rem;overflow-x:auto;margin:.8rem 0;border:1px solid var(--border);color:var(--text)}
+.markdown-body pre code{background:transparent;border:none;padding:0;color:inherit}
+.markdown-body hr{border:none;border-bottom:1px dashed var(--border);margin:1rem 0}
+.markdown-body .emoji{font-size:1.2rem;margin-right:.3rem}
+.markdown-body a{color:var(--accent);text-decoration:none}
+.markdown-body a:hover{text-decoration:underline;color:#a78bfa}
+.markdown-body ul, .markdown-body ol{color:var(--text)}
+.markdown-body li{margin:.2rem 0}
+.markdown-body table{border-collapse:collapse;margin:.8rem 0;color:var(--text)}
+.markdown-body th, .markdown-body td{border:1px solid var(--border);padding:.5rem .75rem}
+.markdown-body th{background:rgba(124,92,255,.1);font-weight:600}
