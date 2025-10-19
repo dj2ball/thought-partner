@@ -76,6 +76,7 @@ class Recipe(BaseModel):
     workflow: Optional[WorkflowConfig] = None  # New workflow configuration
     iterative: Optional[IterativeConfig] = None  # Legacy field for backward compatibility
     meta: Optional[RecipeMeta] = None
+    methodology: Optional[Dict[str, Any]] = None  # Educational context for users
     notes: Optional[str] = None
     ui_preferences: Optional[Dict[str, Any]] = None
     output_format: Optional[Dict[str, Any]] = None

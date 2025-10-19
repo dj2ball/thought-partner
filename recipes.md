@@ -31,63 +31,94 @@ typescriptinterface Recipe {
 }
 
 Complete Recipe Collection
-Recipe 1: Mind Mapping (Parallel Branching)
+Recipe 1: Mind Mapping (Single-Shot Adaptive)
 json{
   "id": "mind_mapping",
-  "name": "Concept Mind Map",
-  "pattern": "parallelization_sectioning",
-  "description": "Radiate ideas from central concept across dimensions",
+  "name": "Mind Mapping",
+  "pattern": "single_shot",
+  "description": "Generate a comprehensive, adaptive mind map tailored to your topic",
   "meta": {
-    "best_for": ["exploring multi-faceted concepts", "strategic planning", "campaign planning"],
-    "time_estimate": "5-10 minutes",
-    "complexity": "beginner",
-    "output_format": "mermaid_diagram",
-    "works_well_with": ["affinity_mapping", "starbursting"]
+    "best_for": ["exploring multi-faceted concepts", "strategic planning", "topic exploration"],
+    "time_estimate": "30-60 seconds",
+    "complexity": "simple",
+    "output_format": "interactive_markmap",
+    "works_well_with": ["lotus_blossom", "crazy_8s"]
   },
   "inputs": [
     {
-      "name": "central_concept",
-      "prompt": "What's your central concept?",
+      "name": "topic",
+      "prompt": "What topic would you like to create a mind map for?",
       "type": "text",
       "required": true,
-      "examples": ["eco-friendly packaging", "remote team culture", "Q3 OKRs", "new CRM system"]
-    },
-    {
-      "name": "dimensions",
-      "prompt": "What aspects should branches explore? (4-6 recommended)",
-      "type": "array",
-      "required": false,
-      "default": ["stakeholders", "opportunities", "constraints", "next steps"],
-      "examples_by_context": {
-        "product_launch": ["target users", "value props", "channels", "messaging", "risks"],
-        "strategy": ["objectives", "resources", "timeline", "stakeholders", "metrics"],
-        "creative": ["visual style", "tone", "formats", "platforms", "calls-to-action"]
-      }
+      "examples": ["Sustainable energy solutions", "Remote work strategies", "AI in healthcare", "Coffee"]
     },
     {
       "name": "depth",
-      "prompt": "How many ideas per branch?",
+      "prompt": "How many levels deep should the mind map go?",
       "type": "integer",
-      "default": 6,
-      "range": [3, 10]
+      "required": false,
+      "default": 3,
+      "range": [2, 5]
     }
   ],
-  "workflow": {
-    "type": "parallel",
-    "parallel": {
-      "branch_template": {
-        "role": "Branch Explorer: {dimension}",
-        "system_prompt": "You are exploring one dimension of a concept. Be specific and actionable. Avoid generic platitudes.",
-        "user_prompt": "Explore the '{dimension}' aspect of '{central_concept}'.\n\nGenerate {depth} specific ideas, considerations, or questions for this branch.\n\nFormat as a simple list."
+  "system_prompt": "You are a creative ideation expert specializing in mind mapping. Generate comprehensive, well-structured mind maps that adapt to the specific topic. Choose the most relevant dimensions and aspects for each unique subject.",
+  "user_prompt_template": "Create a comprehensive mind map for: {topic}\n\nAdapt the structure to what makes most sense for this specific topic. Identify 3-5 main branches that best capture the key dimensions of this subject. For each main branch, create meaningful sub-branches with details and connections.\n\nMake the mind map relevant and tailored to {topic} - don't use generic categories unless they truly fit.",
+  "response_format": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "central_topic": {"type": "string"},
+        "main_branches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "color": {"type": "string"},
+              "sub_branches": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {"type": "string"},
+                    "details": {"type": "array", "items": {"type": "string"}},
+                    "connections": {"type": "array", "items": {"type": "string"}}
+                  },
+                  "required": ["name", "details", "connections"]
+                }
+              }
+            },
+            "required": ["name", "color", "sub_branches"]
+          }
+        },
+        "key_insights": {"type": "array", "items": {"type": "string"}},
+        "cross_connections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {"type": "string"},
+              "to": {"type": "string"},
+              "relationship": {"type": "string"}
+            },
+            "required": ["from", "to", "relationship"]
+          }
+        }
       },
-      "iteration_var": "dimensions",
-      "aggregator": {
-        "role": "Mind Map Synthesizer",
-        "prompt": "Synthesize all branches into a hierarchical Mermaid mindmap diagram.\n\nCentral concept: {central_concept}\nBranches:\n{branch_results}\n\nGenerate valid Mermaid syntax:\n```mermaid\nmindmap\n  root(({central_concept}))\n    {dimension_1}\n      idea 1\n      idea 2\n    {dimension_2}\n      ...\n```\n\nInclude ALL branches and their key ideas."
-      }
+      "required": ["central_topic", "main_branches", "key_insights", "cross_connections"]
     }
+  },
+  "ui_preferences": {
+    "render_as_markdown": false
   }
 }
+
+**Implementation Notes (October 2025 Update)**:
+- **Simplified from parallel to single-shot**: Reduced from 5 LLM calls (4 parallel + synthesis) to 1 LLM call
+- **Adaptive branches**: LLM chooses 3-5 relevant branches per topic instead of hardcoded categories
+- **Visual improvements**: Removed redundant per-sub-branch "Connections" nodes for cleaner UI
+- **Performance**: 80% reduction in API calls, faster response time
+- **Quality**: More topic-specific branches (e.g., "Coffee" → Types, Cultivation, Health, Culture, Sustainability)
 
 Recipe 2: Crazy 8s (Rapid Voting)
 json{

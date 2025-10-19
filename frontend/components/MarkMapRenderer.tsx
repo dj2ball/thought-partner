@@ -11,7 +11,17 @@ function convertToMarkdown(data: any): string {
     return '# Invalid mindmap data';
   }
 
-  let markdown = `# ${data.central_topic}\n\n`;
+  // Add frontmatter with markmap options
+  let markdown = `---
+markmap:
+  color:
+    - "#7c5cff"
+    - "#9b7fff"
+    - "#baa3ff"
+    - "#d9c7ff"
+---
+
+# ${data.central_topic}\n\n`;
 
   data.main_branches.forEach((branch: any) => {
     markdown += `## ${branch.name}\n\n`;
@@ -26,14 +36,9 @@ function convertToMarkdown(data: any): string {
           });
           markdown += '\n';
         }
-        
-        if (subBranch.connections && subBranch.connections.length > 0) {
-          markdown += `#### 🔗 Connections\n`;
-          subBranch.connections.forEach((connection: string) => {
-            markdown += `- ${connection}\n`;
-          });
-          markdown += '\n';
-        }
+
+        // Note: Per-sub-branch connections are intentionally not rendered to avoid visual clutter.
+        // Connections are better represented in the top-level "Cross Connections" section.
       });
     }
   });
@@ -92,69 +97,43 @@ function MarkMapVisualization({ result }: MarkMapRendererProps) {
           markmapRef.current.destroy();
         }
 
-        // Create new markmap instance with custom styles
+        // Create new markmap instance
         const mm = Markmap.create(svgRef.current, {
           duration: 500,
-          maxWidth: 400,  // Increased for better readability
-          spacingVertical: 10,  // More vertical spacing
-          spacingHorizontal: 120,  // More horizontal spacing
+          maxWidth: 400,
+          spacingVertical: 10,
+          spacingHorizontal: 120,
           autoFit: true,
           pan: true,
           zoom: true,
-          initialExpandLevel: 2,  // Start with 2 levels expanded
-          color: (node: any) => {
-            // Use depth-based colors
-            const colors = ['#7c5cff', '#9b7fff', '#baa3ff', '#d9c7ff'];
-            return colors[node.depth % colors.length];
-          },
+          initialExpandLevel: 2,
         });
 
-        // Set the data
+        // Set the data (color comes from markdown frontmatter)
         mm.setData(root);
         mm.fit();
 
-        // Apply custom styles to ensure text visibility
-        const style = document.createElement('style');
-        style.textContent = `
-          .markmap-node-text { 
-            fill: #ffffff !important; 
-            font-size: 16px !important;
-            font-weight: 400;
+        // Add global CSS for white text in markmap
+        // Remove any existing markmap-text-color style first
+        const existingStyle = document.getElementById('markmap-text-color');
+        if (existingStyle) {
+          existingStyle.remove();
+        }
+
+        const styleEl = document.createElement('style');
+        styleEl.id = 'markmap-text-color';
+        styleEl.textContent = `
+          /* Target the foreignObject divs that contain the actual text */
+          .markmap-foreign div,
+          .markmap-foreign div div {
+            color: #ffffff !important;
           }
-          .markmap-node[data-depth="0"] .markmap-node-text {
-            font-size: 20px !important;
-            font-weight: 600;
-            fill: #ffffff !important;
-          }
-          .markmap-node[data-depth="1"] .markmap-node-text {
-            font-size: 18px !important;
-            font-weight: 500;
-            fill: #ffffff !important;
-          }
-          .markmap-node-circle { 
-            fill: #7c5cff !important; 
-            stroke: #7c5cff !important;
-          }
-          .markmap-link { 
-            stroke: #2a2a32 !important; 
-            stroke-width: 2px !important;
-          }
-          .markmap-node {
-            cursor: pointer;
-          }
-          .markmap-node:hover .markmap-node-text {
-            fill: #ffffff !important;
-            font-weight: 500;
-            text-shadow: 0 0 8px rgba(124, 92, 255, 0.8);
-          }
-          .markmap-foreign-object {
-            overflow: visible !important;
-          }
-          .markmap-node text {
-            fill: #ffffff !important;
+          /* Override the CSS variable */
+          .markmap {
+            --markmap-text-color: #ffffff !important;
           }
         `;
-        svgRef.current.appendChild(style);
+        document.head.appendChild(styleEl);
 
         markmapRef.current = mm;
         setIsLoaded(true);
@@ -170,6 +149,12 @@ function MarkMapVisualization({ result }: MarkMapRendererProps) {
 
     return () => {
       mounted = false;
+      // Clean up style element
+      const styleEl = document.getElementById('markmap-text-color');
+      if (styleEl) {
+        styleEl.remove();
+      }
+      // Clean up markmap instance
       if (markmapRef.current && typeof markmapRef.current.destroy === 'function') {
         markmapRef.current.destroy();
         markmapRef.current = null;

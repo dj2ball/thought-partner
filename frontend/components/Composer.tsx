@@ -93,11 +93,14 @@ export function Composer({ recipes, runFn }: { recipes: Recipe[]; runFn: RunFn }
       
       // Extract the actual mindmap data from the nested structure
       const mindmapData = res.output?.output || res.output;
-      const resultData = { 
-        ...mindmapData, 
-        recipe_name: recipe.name 
+      const steps = res.output?.steps || [];
+      const resultData = {
+        ...mindmapData,
+        steps,
+        recipe_name: recipe.name
       };
       console.log('Composer - Extracted mindmap data:', mindmapData);
+      console.log('Composer - Extracted steps:', steps);
       console.log('Composer - Sending to PatternRenderer:', resultData);
       
       patchMessage(thinkingMsgId, { 

@@ -178,18 +178,91 @@ interface InputDefinition {
 - ✅ Smart routing logic (recipe name → data structure → pattern fallback)
 - ✅ Preserve existing markdown rendering for debates
 
-### 🚀 Phase 5: Remaining Recipe Integration (Ready to Start)
+### 🚀 Phase 5: Recipe Integration (IN PROGRESS)
 
-#### 5.1 Batch Recipe Conversion
-Convert remaining 15 recipes following established patterns (frontend renderers ready):
-- **Parallel**: Crazy 8s (GridRenderer), Rapid ideation (GridRenderer)
-- **Chain**: Provocation, Synectics (PersonaRenderer), Futuring backwards (TimelineRenderer), Role storming (PersonaRenderer), Round robin
-- **Iterative**: Brainwriting (GridRenderer), World café (TreeRenderer), Brain netting (ClusterRenderer)
-- **Orchestrator**: Morphological matrix (MatrixRenderer)
-- **Routing**: Affinity mapping (ClusterRenderer), Routing (general)
-- **Evaluator-Optimizer**: Storyboarding (TimelineRenderer with quality gates)
+#### ✅ 5.1 First Recipe Added: Random Word Association (COMPLETED)
 
-#### 5.2 Recipe Chaining Support
+**Recipe**: Random Word Catalyst (chain pattern, 3 steps)
+- ✅ Added to `brainstorm_recipes.json` with proper chain workflow structure
+- ✅ Fixed ChainRunner implementation issues
+- ✅ Enhanced GridRenderer for `developed_concepts` display
+- ✅ End-to-end tested and working
+
+**Implementation Details**:
+```json
+{
+  "workflow": {
+    "type": "chain",
+    "chain": {
+      "steps": [
+        { "id": "analyze_word", ... },
+        { "id": "find_connections", ... },
+        { "id": "develop_concepts", ... }
+      ]
+    }
+  }
+}
+```
+
+**Key Debugging & Fixes**:
+1. **ChainRunner Architecture Update**:
+   - Original: Used LangChain's PromptTemplate (failed with literal JSON in prompts)
+   - Fixed: Dual-mode support - Native AsyncOpenAI (default) + LangChain stub (optional)
+   - Result: Consistent with other runners, handles JSON schemas properly
+
+2. **ChainRunner Implementation (`/backend/app/services/runners/chain.py`)**:
+   ```python
+   async def run(self, recipe, inputs):
+       if settings.use_langchain:
+           return await self._run_with_langchain(recipe, inputs)  # Stub for future
+       else:
+           return await self._run_native(recipe, inputs)  # Working implementation
+   ```
+   - Uses AsyncOpenAI directly (like other runners)
+   - Supports JSON schema validation
+   - Passes context between steps: `step.{step_id}.output` → next step
+   - Profile injection works correctly
+
+3. **Frontend GridRenderer Enhancement (`/frontend/components/PatternRenderer.tsx`)**:
+   - Added `developed_concepts` to detection logic
+   - Enhanced concept cards with all fields:
+     - 🎨 Inspired by (borrowed_from)
+     - 💡 Why compelling
+     - 🔧 Implementation
+     - ⚠️ Challenges
+   - Automatic detection via data structure (no manual routing needed)
+
+**Recipe Flow**:
+```
+User Input: target_domain="mobile apps", random_word="lighthouse", n_connections=5
+     ↓
+Step 1 (analyze_word): Generate 5 properties of "lighthouse"
+     ↓
+Step 2 (find_connections): Link each property to mobile apps (5 rough ideas)
+     ↓
+Step 3 (develop_concepts): Select TOP 3 strongest + fully develop them
+     ↓
+Output: 3 developed concepts with title, borrowed_from, why_compelling, implementation, challenges
+```
+
+**Architecture Validation**:
+- ✅ RunnerFactory routes correctly to ChainRunner
+- ✅ Native OpenAI mode works (default)
+- ✅ LangChain option preserved (stub with clear TODO)
+- ✅ Profile injection applied via BaseRunner
+- ✅ JSON schema enforcement works
+- ✅ Context passing between chain steps works
+- ✅ Frontend auto-detects and renders properly
+
+#### 🔄 5.2 Remaining Recipes (4 more to add)
+
+**Next Up** (all using working runners):
+- **Reverse Brainstorming** (chain) - 3 steps: sabotage → invert → prioritize
+- **Rapid Ideation** (chain) - 3 steps: generate flood → filter → format
+- **Crazy 8s** (parallel/voting) - 8 parallel variations + ranking
+- **Affinity Mapping** (routing) - cluster → refine → synthesize
+
+#### 5.3 Recipe Chaining Support (Future Phase)
 - Enable output from one recipe to feed into another
 - Create recipe combination suggestions
 - Implement workflow templates for common recipe sequences
@@ -212,10 +285,13 @@ Convert remaining 15 recipes following established patterns (frontend renderers 
 
 ## 🔧 **Technical Specifications**
 
-### LangChain Integration Points
-- **ChainRunner**: Uses `SequentialChain` with custom output parsers
-- **RoutingRunner**: Uses `LLMRouterChain` for classification
-- **Shared Components**: Custom prompt templates, memory management, error handling
+### LangChain Integration Status
+- **ChainRunner**: Dual-mode support
+  - Native AsyncOpenAI (default, `USE_LANGCHAIN=false`) - ✅ Working
+  - LangChain mode (optional, `USE_LANGCHAIN=true`) - ⏳ Stub (future implementation)
+  - Issue: LangChain's PromptTemplate can't handle literal JSON in prompts
+- **RoutingRunner**: Native implementation (no LangChain dependency)
+- **All Other Runners**: Native AsyncOpenAI (consistent architecture)
 
 ### Profile Integration Strategy
 - All runners inherit profile injection capability

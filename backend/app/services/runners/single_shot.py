@@ -45,10 +45,11 @@ class SingleShotRunner(BaseRunner):
             )
         
         result = json.loads(response.choices[0].message.content)
-        
+
         return {
             "recipe_id": recipe.id,
             "mode": "single_shot",
             "output": result,
+            "methodology": recipe.methodology if hasattr(recipe, 'methodology') and recipe.methodology else None,
             "meta": {"runner_type": "single_shot"}
         }

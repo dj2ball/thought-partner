@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(python:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(find /root/thought_partner/frontend/app -type f ( -name \"*.tsx\" -o -name \"*.ts\" ))",
+      "Bash(find /root/thought_partner/frontend/components -type f ( -name \"*.tsx\" -o -name \"*.ts\" ))",
+      "Bash(find /root/thought_partner/frontend/lib -type f ( -name \"*.tsx\" -o -name \"*.ts\" ))",
+      "Bash(curl -s http://localhost:8000/recipes)",
+      "Bash(curl -X POST http://localhost:8000/run -H \"Content-Type: application/json\" -d '{\"\"\"\"recipe_id\"\"\"\": \"\"\"\"reverse_brainstorming\"\"\"\", \"\"\"\"params\"\"\"\": {\"\"\"\"problem\"\"\"\": \"\"\"\"Test problem\"\"\"\", \"\"\"\"n_sabotages\"\"\"\": 3}}')",
+      "Bash(curl -X POST http://localhost:8000/run -H \"Content-Type: application/json\" -d '{\"\"recipe_id\"\": \"\"reverse_brainstorming\"\", \"\"params\"\": {\"\"problem\"\": \"\"Test problem\"\", \"\"n_sabotages\"\": 3}}' -o /tmp/response.json)",
+      "Bash(curl -s -X POST http://localhost:8000/chat -H \"Content-Type: application/json\" -d '{\n    \"\"\"\"message\"\"\"\": \"\"\"\"generate 3 ideas for productivity apps\"\"\"\",\n    \"\"\"\"user_id\"\"\"\": \"\"\"\"demo-user\"\"\"\"\n  }')"
     ],
     "deny": []
   }

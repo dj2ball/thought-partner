@@ -1,11 +1,201 @@
 "use client";
 import ReactMarkdown from "react-markdown";
 import { MarkMapRenderer } from "./MarkMapRenderer";
+import { useState } from "react";
 
 interface PatternRendererProps {
   result: any;
-  pattern: string;
-  recipeName: string;
+  pattern?: string;
+  recipeName?: string;
+}
+
+function MethodologyCard({ methodology, recipeName }: { methodology: any; recipeName: string }) {
+  if (!methodology) return null;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(124, 92, 255, 0.1) 0%, rgba(124, 92, 255, 0.05) 100%)',
+      border: '1px solid rgba(124, 92, 255, 0.3)',
+      borderRadius: '12px',
+      padding: '1.5rem',
+      marginBottom: '2rem'
+    }}>
+      <h3 style={{
+        margin: '0 0 1rem 0',
+        color: 'var(--accent)',
+        fontSize: '1.1rem',
+        fontWeight: '600'
+      }}>
+        📚 About {recipeName}
+      </h3>
+
+      {methodology.overview && (
+        <p style={{
+          margin: '0 0 1rem 0',
+          color: 'var(--foreground)',
+          lineHeight: '1.6'
+        }}>
+          {methodology.overview}
+        </p>
+      )}
+
+      {methodology.value && (
+        <div style={{ marginBottom: '1rem' }}>
+          <strong style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>💡 Value:</strong>
+          <p style={{
+            margin: '0.5rem 0 0 0',
+            color: 'var(--foreground)',
+            lineHeight: '1.6',
+            fontSize: '0.95rem'
+          }}>
+            {methodology.value}
+          </p>
+        </div>
+      )}
+
+      {methodology.process && (
+        <div>
+          <strong style={{ color: 'var(--accent)', fontSize: '0.9rem' }}>⚙️ Process:</strong>
+          <p style={{
+            margin: '0.5rem 0 0 0',
+            color: 'var(--foreground)',
+            lineHeight: '1.6',
+            fontSize: '0.95rem'
+          }}>
+            {methodology.process}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProcessSteps({ steps }: { steps: any[] }) {
+  const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({});
+
+  if (!steps || steps.length === 0) {
+    return null;
+  }
+
+  const toggleStep = (idx: number) => {
+    setExpandedSteps(prev => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  const formatStepName = (stepId: string) => {
+    return stepId
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const renderStepContent = (output: any) => {
+    if (!output) return null;
+
+    // Handle arrays of items (sabotages, solutions, concepts, etc.)
+    const arrayFields = Object.keys(output).filter(key => Array.isArray(output[key]));
+
+    return (
+      <div style={{ padding: '1rem' }}>
+        {arrayFields.map((fieldName, idx) => (
+          <div key={idx} style={{ marginBottom: '1rem' }}>
+            <div style={{
+              fontWeight: '600',
+              marginBottom: '0.5rem',
+              textTransform: 'capitalize',
+              color: 'var(--accent)'
+            }}>
+              {fieldName.replace(/_/g, ' ')}:
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {output[fieldName].map((item: any, itemIdx: number) => (
+                <div key={itemIdx} style={{
+                  padding: '0.75rem',
+                  background: 'var(--bg-secondary)',
+                  borderRadius: '6px',
+                  borderLeft: '3px solid var(--accent)',
+                  color: 'var(--muted)',
+                  fontSize: '0.9rem'
+                }}>
+                  {typeof item === 'string' ? (
+                    <div>{item}</div>
+                  ) : (
+                    Object.entries(item).map(([key, value]) => (
+                      <div key={key} style={{ marginBottom: '0.25rem' }}>
+                        <strong style={{ textTransform: 'capitalize', color: 'var(--text)' }}>
+                          {key.replace(/_/g, ' ')}:
+                        </strong>{' '}
+                        {Array.isArray(value) ? (
+                          <ul style={{ margin: '0.25rem 0', paddingLeft: '1.5rem' }}>
+                            {value.map((v: any, i: number) => (
+                              <li key={i}>{v}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <span>{String(value)}</span>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <div className="process-steps" style={{ marginBottom: '2rem' }}>
+      <h3 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>💭 Thinking Process</h3>
+      <div className="steps-container">
+        {steps.map((stepData: any, idx: number) => {
+          const stepName = formatStepName(stepData.step);
+          const isExpanded = expandedSteps[idx];
+
+          return (
+            <div key={idx} className="process-step" style={{
+              border: '1px solid var(--border-color)',
+              borderRadius: '8px',
+              marginBottom: '0.5rem',
+              overflow: 'hidden'
+            }}>
+              <button
+                onClick={() => toggleStep(idx)}
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  background: 'var(--bg-secondary)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                  color: '#ffffff'
+                }}
+              >
+                <span style={{ color: '#ffffff' }}>
+                  Step {idx + 1}: {stepName}
+                </span>
+                <span style={{ color: '#ffffff' }}>{isExpanded ? '▼' : '▶'}</span>
+              </button>
+
+              {isExpanded && (
+                <div style={{
+                  background: 'var(--bg-primary)',
+                  borderTop: '1px solid var(--border-color)'
+                }}>
+                  {renderStepContent(stepData.output)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function MindMapRenderer({ result }: { result: any }) {
@@ -347,27 +537,151 @@ function ClusterRenderer({ result }: { result: any }) {
 }
 
 function GridRenderer({ result }: { result: any }) {
+  // Extract output and steps from the result structure
+  // After Composer processing, steps are at result.steps and data is at result level
+  const outputData = result;
+  const steps = result.steps || [];
+
+  console.log('GridRenderer - Full result:', result);
+  console.log('GridRenderer - outputData:', outputData);
+  console.log('GridRenderer - steps:', steps);
+  console.log('GridRenderer - steps.length:', steps.length);
+
   // Handle grid/rapid concept data
-  if (!result?.concepts && !result?.ideas && !result?.sketches) {
+  if (!outputData?.concepts && !outputData?.ideas && !outputData?.sketches && !outputData?.developed_concepts) {
     return <DefaultRenderer result={result} />;
   }
 
-  const gridData = result.concepts || result.ideas || result.sketches || [];
+  const gridData = outputData.concepts || outputData.ideas || outputData.sketches || outputData.developed_concepts || [];
+
+  console.log('GridRenderer - gridData:', gridData);
+  console.log('GridRenderer - gridData.length:', gridData.length);
 
   return (
     <div className="grid-result">
+      {steps.length > 0 && <ProcessSteps steps={steps} />}
+
+      {gridData.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <h3 style={{ marginBottom: '1rem', color: 'var(--accent)' }}>✨ Final Solutions</h3>
+        </div>
+      )}
+
       <div className="concepts-grid">
         {gridData.map((concept: any, idx: number) => (
           <div key={idx} className="concept-card">
             <div className="concept-number">{idx + 1}</div>
             <div className="concept-content">
               <h4>{concept.title || concept.name || `Concept ${idx + 1}`}</h4>
+
+              {concept.borrowed_from && (
+                <div className="concept-meta">
+                  <strong>🎨 Inspired by:</strong> {concept.borrowed_from}
+                </div>
+              )}
+
+              {concept.why_compelling && (
+                <div className="concept-compelling">
+                  <strong>💡 Why compelling:</strong> {concept.why_compelling}
+                </div>
+              )}
+
               {concept.description && (
                 <p>{concept.description}</p>
               )}
+
+              {concept.implementation && (
+                <div className="concept-implementation">
+                  <strong>🔧 Implementation:</strong> {concept.implementation}
+                </div>
+              )}
+
+              {concept.challenges && (
+                <div className="concept-challenges">
+                  <strong>⚠️ Challenges:</strong> {concept.challenges}
+                </div>
+              )}
+
+              {concept.one_liner && (
+                <div className="concept-one-liner">
+                  <strong>📝 One-liner:</strong> {concept.one_liner}
+                </div>
+              )}
+
+              {concept.why_it_matters && (
+                <div className="concept-why-matters">
+                  <strong>💎 Why it matters:</strong> {concept.why_it_matters}
+                </div>
+              )}
+
+              {concept.why_priority && (
+                <div className="concept-why-priority">
+                  <strong>⭐ Why priority:</strong> {concept.why_priority}
+                </div>
+              )}
+
+              {concept.priority_score && (
+                <div className="concept-priority">
+                  <strong>📊 Priority:</strong> {concept.priority_score}
+                </div>
+              )}
+
+              {concept.strength_rating && (
+                <div className="concept-strength">
+                  <strong>💪 Strength:</strong> {concept.strength_rating}/10
+                </div>
+              )}
+
+              {concept.effort_estimate && (
+                <div className="concept-effort">
+                  <strong>⏱️ Effort:</strong> {concept.effort_estimate}
+                </div>
+              )}
+
+              {concept.quick_win && (
+                <div className="concept-quick-win">
+                  <strong>🎯 Quick win:</strong> {concept.quick_win}
+                </div>
+              )}
+
+              {concept.next_step && (
+                <div className="concept-next-step">
+                  <strong>➡️ Next step:</strong> {concept.next_step}
+                </div>
+              )}
+
+              {concept.first_steps && concept.first_steps.length > 0 && (
+                <div className="concept-first-steps">
+                  <strong>🚀 First steps:</strong>
+                  <ul>
+                    {concept.first_steps.map((step: string, stepIdx: number) => (
+                      <li key={stepIdx}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {concept.success_metrics && concept.success_metrics.length > 0 && (
+                <div className="concept-metrics">
+                  <strong>📈 Success metrics:</strong>
+                  <ul>
+                    {concept.success_metrics.map((metric: string, metricIdx: number) => (
+                      <li key={metricIdx}>{metric}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {concept.obstacles && (
+                <div className="concept-obstacles">
+                  <strong>🚧 Obstacles:</strong> {concept.obstacles}
+                </div>
+              )}
+
               {concept.sketch && (
                 <div className="concept-sketch">{concept.sketch}</div>
               )}
+
               {concept.tags && (
                 <div className="concept-tags">
                   {concept.tags.map((tag: string, tagIdx: number) => (
@@ -380,11 +694,11 @@ function GridRenderer({ result }: { result: any }) {
         ))}
       </div>
 
-      {result.selected_concepts && (
+      {outputData.selected_concepts && (
         <div className="grid-selected">
           <h3>⭐ Selected Concepts</h3>
           <div className="selected-concepts">
-            {result.selected_concepts.map((concept: any, idx: number) => (
+            {outputData.selected_concepts.map((concept: any, idx: number) => (
               <div key={idx} className="selected-concept">
                 <strong>{concept.title}</strong>: {concept.reason}
               </div>
@@ -545,15 +859,33 @@ function DefaultRenderer({ result }: { result: any }) {
 }
 
 export function PatternRenderer({ result, pattern, recipeName }: PatternRendererProps) {
-  const lowerRecipeName = recipeName.toLowerCase();
-  
+  const lowerRecipeName = (recipeName || result?.recipe_id || '').toLowerCase();
+
+  // Handle chain recipes with steps (show methodology + process + final output)
+  if (result?.steps && result?.output) {
+    return (
+      <div>
+        {result?.methodology && (
+          <MethodologyCard methodology={result.methodology} recipeName={result.recipe_id || recipeName || 'This Technique'} />
+        )}
+        <ProcessSteps steps={result.steps} />
+        <div style={{ marginTop: '2rem' }}>
+          <PatternRenderer result={result.output} pattern={pattern} recipeName={recipeName} />
+        </div>
+      </div>
+    );
+  }
+
   // Recipe-specific rendering (overrides pattern-based)
-  if (lowerRecipeName.includes('mind map')) {
-    return <MarkMapRenderer result={result} />;
+  if (lowerRecipeName.includes('mind map') || lowerRecipeName.includes('mind_map') || lowerRecipeName.includes('mindmap')) {
+    // Unwrap if data is in output field (from conversational agent)
+    const mindmapData = result?.output?.central_topic ? result.output : result;
+    return <MarkMapRenderer result={mindmapData} />;
   }
   
-  if (lowerRecipeName.includes('crazy 8') || lowerRecipeName.includes('rapid ideation') || 
-      lowerRecipeName.includes('brainwriting')) {
+  if (lowerRecipeName.includes('crazy 8') || lowerRecipeName.includes('rapid ideation') ||
+      lowerRecipeName.includes('brainwriting') || lowerRecipeName.includes('reverse brainstorming') ||
+      lowerRecipeName.includes('random word')) {
     return <GridRenderer result={result} />;
   }
   
@@ -585,16 +917,16 @@ export function PatternRenderer({ result, pattern, recipeName }: PatternRenderer
   if (result?.timeline || result?.steps || result?.sequence) {
     return <TimelineRenderer result={result} />;
   }
-  
+
   if (result?.matrix || result?.dimensions || result?.combinations) {
     return <MatrixRenderer result={result} />;
   }
-  
+
   if (result?.clusters || result?.groups || result?.categories) {
     return <ClusterRenderer result={result} />;
   }
-  
-  if (result?.concepts || result?.ideas || result?.sketches) {
+
+  if (result?.concepts || result?.ideas || result?.sketches || result?.developed_concepts) {
     return <GridRenderer result={result} />;
   }
   

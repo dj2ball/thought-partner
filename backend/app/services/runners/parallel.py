@@ -35,6 +35,7 @@ class ParallelRunner(BaseRunner):
             "mode": "parallel",
             "output": results.get("synthesis", results.get("branches", results.get("votes", []))),
             "parallel_results": results,
+            "methodology": recipe.methodology if hasattr(recipe, 'methodology') and recipe.methodology else None,
             "meta": {
                 "runner_type": "parallel",
                 "parallel_mode": getattr(parallel_config, 'mode', 'voting')

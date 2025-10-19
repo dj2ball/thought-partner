@@ -40,3 +40,45 @@ export async function saveProfile(profile: any) {
 
   return response.json();
 }
+
+// Conversational Chat API
+export interface ChatRequest {
+  message: string;
+  session_id?: string;
+  user_id?: string;
+}
+
+export interface ChatResponse {
+  session_id: string;
+  message: string;
+  tool_calls?: Array<{ function_name: string; arguments: any }>;
+  tool_results?: any;
+}
+
+export async function chatWithAgent(request: ChatRequest): Promise<ChatResponse> {
+  const response = await fetch(`${API_BASE}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Chat API error: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function clearChatSession(sessionId: string) {
+  const response = await fetch(`${API_BASE}/chat/${sessionId}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to clear session: ${response.status}`);
+  }
+
+  return response.json();
+}

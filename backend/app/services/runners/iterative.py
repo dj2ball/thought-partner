@@ -84,6 +84,7 @@ class IterativeRunner(BaseRunner):
             "loops": len(history),
             "history": history,
             "final_state": state,
+            "methodology": recipe.methodology if hasattr(recipe, 'methodology') and recipe.methodology else None,
             "meta": {"runner_type": "iterative"}
         }
         

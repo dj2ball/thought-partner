@@ -1,7 +1,7 @@
 [
   {
     "id": "multi_agent_debate",
-    "name": "Multi-Agent Debate (Optimist vs Skeptic \u2192 Mediator)",
+    "name": "Multi-Agent Debate (Optimist vs Skeptic → Mediator)",
     "description": "True multi-step loop: Optimist proposes, Skeptic critiques, Mediator reconciles and updates state.",
     "inputs": [
       "problem",
@@ -165,8 +165,8 @@
   },
   {
     "id": "mind_mapping",
-    "name": "Mind Mapping (Parallel Branching)",
-    "description": "Generate a comprehensive mind map by exploring different aspects in parallel branches",
+    "name": "Mind Mapping",
+    "description": "Generate a comprehensive, adaptive mind map tailored to your topic",
     "inputs": [
       {
         "name": "topic",
@@ -191,24 +191,44 @@
         ]
       }
     ],
-    "system_prompt": "You are a creative ideation expert specializing in mind mapping. Generate comprehensive, well-structured ideas that connect concepts logically.",
-    "user_prompt_template": "Create a mind map for: {topic}",
-    "workflow": {
-      "type": "parallel",
-      "parallel": {
-        "mode": "branching",
-        "branches": [
-          {
-            "name": "core_concepts",
-            "prompt": "Topic: {topic}\n\nIdentify 4-6 core concepts or main branches that relate to this topic. For each concept, provide a brief description and 2-3 sub-concepts.\n\nReturn JSON with this structure: {\"branch_name\": \"Core Concepts\", \"concepts\": [{\"name\": \"concept name\", \"description\": \"brief description\", \"sub_concepts\": [\"sub1\", \"sub2\"]}]}",
-            "temperature": 0.7,
-            "response_schema": {
+    "system_prompt": "You are a creative ideation expert specializing in mind mapping. Generate comprehensive, well-structured mind maps that adapt to the specific topic. Choose the most relevant dimensions and aspects for each unique subject.",
+    "user_prompt_template": "Create a comprehensive mind map for: {topic}\n\nAdapt the structure to what makes most sense for this specific topic. Identify 3-5 main branches that best capture the key dimensions of this subject. For each main branch, create meaningful sub-branches with details and connections.\n\nMake the mind map relevant and tailored to {topic} - don't use generic categories unless they truly fit.",
+    "meta": {
+      "complexity": "simple",
+      "time_estimate": "30-60 seconds",
+      "tags": [
+        "visual",
+        "brainstorming",
+        "structure",
+        "adaptive"
+      ],
+      "works_well_with": [
+        "lotus_blossom",
+        "crazy_8s"
+      ]
+    },
+    "ui_preferences": {
+      "render_as_markdown": false
+    },
+    "response_format": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "central_topic": {
+            "type": "string"
+          },
+          "main_branches": {
+            "type": "array",
+            "items": {
               "type": "object",
               "properties": {
-                "branch_name": {
+                "name": {
                   "type": "string"
                 },
-                "concepts": {
+                "color": {
+                  "type": "string"
+                },
+                "sub_branches": {
                   "type": "array",
                   "items": {
                     "type": "object",
@@ -216,10 +236,13 @@
                       "name": {
                         "type": "string"
                       },
-                      "description": {
-                        "type": "string"
+                      "details": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
                       },
-                      "sub_concepts": {
+                      "connections": {
                         "type": "array",
                         "items": {
                           "type": "string"
@@ -228,276 +251,676 @@
                     },
                     "required": [
                       "name",
-                      "description",
-                      "sub_concepts"
+                      "details",
+                      "connections"
                     ],
                     "additionalProperties": false
                   }
                 }
               },
               "required": [
-                "branch_name",
-                "concepts"
+                "name",
+                "color",
+                "sub_branches"
               ],
               "additionalProperties": false
             }
           },
-          {
-            "name": "practical_applications",
-            "prompt": "Topic: {topic}\n\nExplore practical applications, use cases, and real-world implementations of this topic. Think about how it applies in different industries or contexts.\n\nReturn JSON with this structure: {\"branch_name\": \"Practical Applications\", \"applications\": [{\"context\": \"industry/domain\", \"use_case\": \"specific application\", \"benefits\": [\"benefit1\", \"benefit2\"]}]}",
-            "temperature": 0.8,
-            "response_schema": {
+          "key_insights": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "cross_connections": {
+            "type": "array",
+            "items": {
               "type": "object",
               "properties": {
-                "branch_name": {
+                "from": {
                   "type": "string"
                 },
-                "applications": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "context": {
-                        "type": "string"
-                      },
-                      "use_case": {
-                        "type": "string"
-                      },
-                      "benefits": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "required": [
-                      "context",
-                      "use_case",
-                      "benefits"
-                    ],
-                    "additionalProperties": false
-                  }
+                "to": {
+                  "type": "string"
+                },
+                "relationship": {
+                  "type": "string"
                 }
               },
               "required": [
-                "branch_name",
-                "applications"
+                "from",
+                "to",
+                "relationship"
               ],
               "additionalProperties": false
             }
-          },
+          }
+        },
+        "required": [
+          "central_topic",
+          "main_branches",
+          "key_insights",
+          "cross_connections"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  {
+    "id": "random_word",
+    "name": "Random Word Catalyst",
+    "description": "Use random stimulus to spark unexpected ideas through forced connections",
+    "methodology": {
+      "overview": "Random Word is a lateral thinking technique that uses unrelated stimuli to break conventional thought patterns and spark creative connections.",
+      "value": "By forcing connections between your challenge and a random concept, you access unexpected perspectives that linear thinking would never reach. This technique is particularly powerful for breaking out of 'obvious' solutions.",
+      "process": "Step 1 analyzes properties of a random word. Step 2 forces connections between those properties and your domain. Step 3 develops the most compelling connections into fully-formed concepts."
+    },
+    "inputs": [
+      {
+        "name": "target_domain",
+        "prompt": "What are you trying to generate ideas for?",
+        "type": "text",
+        "required": true,
+        "examples": [
+          "snack brand names",
+          "workshop activities",
+          "app features",
+          "blog topics"
+        ]
+      },
+      {
+        "name": "random_word",
+        "prompt": "Random word (leave empty for a creative suggestion)",
+        "type": "text",
+        "required": false,
+        "examples": [
+          "compass",
+          "glacier",
+          "kaleidoscope",
+          "lighthouse"
+        ]
+      },
+      {
+        "name": "n_connections",
+        "prompt": "How many initial connections to explore?",
+        "type": "integer",
+        "required": false,
+        "default": 10,
+        "range": [
+          8,
+          15
+        ]
+      }
+    ],
+    "system_prompt": "You are a creative thinking expert specializing in lateral thinking and forced connections. Analyze deeply, going beyond surface meanings to find hidden properties, metaphors, and associations.",
+    "user_prompt_template": "Use '{random_word}' as a creative catalyst for generating ideas about: {target_domain}",
+    "workflow": {
+      "type": "chain",
+      "chain": {
+        "steps": [
           {
-            "name": "challenges_opportunities",
-            "prompt": "Topic: {topic}\n\nIdentify key challenges, opportunities, and future trends related to this topic. Think about obstacles, potential solutions, and emerging possibilities.\n\nReturn JSON with this structure: {\"branch_name\": \"Challenges & Opportunities\", \"items\": [{\"type\": \"challenge|opportunity|trend\", \"title\": \"brief title\", \"description\": \"detailed description\", \"impact\": \"high|medium|low\"}]}",
-            "temperature": 0.6,
+            "id": "analyze_word",
+            "role": "Word Analyst",
+            "system_prompt": "Analyze words deeply, going beyond surface meanings. Find hidden properties, metaphors, and associations.",
+            "user_prompt": "Analyze the word '{random_word}' deeply:\n\n- Physical properties\n- Functional properties\n- Metaphorical associations\n- Cultural/emotional connotations\n- Related concepts\n\nGenerate {n_connections} distinct properties/associations. Be specific and varied.\n\nReturn JSON with this structure: {\"word\": \"{random_word}\", \"properties\": [{\"property\": \"property name\", \"description\": \"detailed description\"}]}",
             "response_schema": {
               "type": "object",
               "properties": {
-                "branch_name": {
+                "word": {
                   "type": "string"
                 },
-                "items": {
+                "properties": {
                   "type": "array",
                   "items": {
                     "type": "object",
                     "properties": {
-                      "type": {
-                        "type": "string",
-                        "enum": [
-                          "challenge",
-                          "opportunity",
-                          "trend"
-                        ]
-                      },
-                      "title": {
+                      "property": {
                         "type": "string"
                       },
                       "description": {
                         "type": "string"
-                      },
-                      "impact": {
-                        "type": "string",
-                        "enum": [
-                          "high",
-                          "medium",
-                          "low"
-                        ]
                       }
                     },
                     "required": [
-                      "type",
-                      "title",
-                      "description",
-                      "impact"
+                      "property",
+                      "description"
                     ],
                     "additionalProperties": false
                   }
                 }
               },
               "required": [
-                "branch_name",
-                "items"
+                "word",
+                "properties"
               ],
               "additionalProperties": false
             }
           },
           {
-            "name": "connections_relationships",
-            "prompt": "Topic: {topic}\n\nExplore connections and relationships between this topic and other domains, concepts, or fields. Think about interdisciplinary links and cross-pollination opportunities.\n\nReturn JSON with this structure: {\"branch_name\": \"Connections & Relationships\", \"connections\": [{\"related_field\": \"field name\", \"relationship_type\": \"influences|depends_on|complements|conflicts\", \"explanation\": \"how they relate\"}]}",
-            "temperature": 0.9,
+            "id": "find_connections",
+            "role": "Connection Finder",
+            "system_prompt": "Force unexpected connections. Embrace absurdity initially - refinement comes later.",
+            "user_prompt": "Link each property/association of '{random_word}' to '{target_domain}'.\n\nWord properties:\n{step.analyze_word.output}\n\nFor each property, force a connection to {target_domain}. Don't filter for practicality yet - just make surprising links.\n\nFormat:\n- [Property] → [Connection to {target_domain}] → [Rough idea]\n\nReturn JSON with this structure: {\"connections\": [{\"property\": \"property name\", \"link\": \"how it connects\", \"rough_idea\": \"initial concept\"}]}",
             "response_schema": {
               "type": "object",
               "properties": {
-                "branch_name": {
-                  "type": "string"
-                },
                 "connections": {
                   "type": "array",
                   "items": {
                     "type": "object",
                     "properties": {
-                      "related_field": {
+                      "property": {
                         "type": "string"
                       },
-                      "relationship_type": {
-                        "type": "string",
-                        "enum": [
-                          "influences",
-                          "depends_on",
-                          "complements",
-                          "conflicts"
-                        ]
+                      "link": {
+                        "type": "string"
                       },
-                      "explanation": {
+                      "rough_idea": {
                         "type": "string"
                       }
                     },
                     "required": [
-                      "related_field",
-                      "relationship_type",
-                      "explanation"
+                      "property",
+                      "link",
+                      "rough_idea"
                     ],
                     "additionalProperties": false
                   }
                 }
               },
               "required": [
-                "branch_name",
                 "connections"
               ],
               "additionalProperties": false
             }
-          }
-        ],
-        "synthesis": {
-          "prompt": "Based on the parallel exploration of {topic}, synthesize all branches into a comprehensive mind map structure.\n\nParallel Results:\n{parallel_results}\n\nCreate a unified mind map that:\n1. Organizes all concepts hierarchically\n2. Shows connections between different branches\n3. Highlights the most important insights\n4. Provides a clear visual structure\n\nReturn JSON with the complete mind map structure.",
-          "response_schema": {
-            "type": "object",
-            "properties": {
-              "central_topic": {
-                "type": "string"
-              },
-              "main_branches": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "color": {
-                      "type": "string"
-                    },
-                    "sub_branches": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "details": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "connections": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "required": [
-                          "name",
-                          "details",
-                          "connections"
-                        ],
-                        "additionalProperties": false
+          },
+          {
+            "id": "develop_concepts",
+            "role": "Concept Developer",
+            "system_prompt": "Transform rough connections into viable concepts. Maintain the surprise factor while adding feasibility.",
+            "user_prompt": "From these connections:\n{step.find_connections.output}\n\nSelect the 3 strongest connections and develop each into a full concept for {target_domain}.\n\nFor each:\n- Concept name/title\n- How it borrows from '{random_word}'\n- Why it's compelling\n- Implementation sketch (2-3 sentences)\n- Potential challenges\n\nReturn JSON with this structure: {\"developed_concepts\": [{\"title\": \"concept name\", \"borrowed_from\": \"what aspect of the word\", \"why_compelling\": \"explanation\", \"implementation\": \"how to execute\", \"challenges\": \"potential obstacles\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "developed_concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "borrowed_from": {
+                        "type": "string"
+                      },
+                      "why_compelling": {
+                        "type": "string"
+                      },
+                      "implementation": {
+                        "type": "string"
+                      },
+                      "challenges": {
+                        "type": "string"
                       }
-                    }
+                    },
+                    "required": [
+                      "title",
+                      "borrowed_from",
+                      "why_compelling",
+                      "implementation",
+                      "challenges"
+                    ],
+                    "additionalProperties": false
                   },
-                  "required": [
-                    "name",
-                    "color",
-                    "sub_branches"
-                  ],
-                  "additionalProperties": false
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
-              "key_insights": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
-              "cross_connections": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "from": {
-                      "type": "string"
-                    },
-                    "to": {
-                      "type": "string"
-                    },
-                    "relationship": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "from",
-                    "to",
-                    "relationship"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            },
-            "required": [
-              "central_topic",
-              "main_branches",
-              "key_insights",
-              "cross_connections"
-            ],
-            "additionalProperties": false
+              "required": [
+                "developed_concepts"
+              ],
+              "additionalProperties": false
+            }
           }
-        }
+        ]
       }
     },
     "meta": {
-      "complexity": "intermediate",
-      "time_estimate": "3-5 minutes",
+      "complexity": "beginner",
+      "time_estimate": "5-10 minutes",
       "tags": [
-        "visual",
-        "brainstorming",
-        "structure",
-        "parallel"
+        "lateral_thinking",
+        "creative",
+        "forced_connections"
       ],
       "works_well_with": [
-        "lotus_blossom",
+        "synectics",
+        "provocation_po"
+      ]
+    },
+    "ui_preferences": {
+      "render_as_markdown": true
+    }
+  },
+  {
+    "id": "reverse_brainstorming",
+    "name": "Reverse Brainstorming",
+    "description": "Generate solutions by first imagining how to make the problem worse, then inverting those ideas",
+    "methodology": {
+      "overview": "Reverse Brainstorming flips problem-solving on its head by first identifying ways to make things worse, then inverting those 'sabotages' into constructive solutions.",
+      "value": "It's often easier to criticize than to create. By identifying what would harm your goal, you reveal hidden assumptions and constraints. Inverting these reveals innovative solutions you might otherwise miss.",
+      "process": "Step 1 identifies ways to sabotage or worsen the problem. Step 2 inverts each sabotage into a constructive solution. Step 3 prioritizes the strongest solutions with implementation details and success metrics."
+    },
+    "inputs": [
+      {
+        "name": "problem",
+        "prompt": "What problem or challenge are you trying to solve?",
+        "type": "text",
+        "required": true,
+        "examples": [
+          "Improve team collaboration",
+          "Increase customer retention",
+          "Reduce meeting inefficiency",
+          "Enhance product onboarding"
+        ]
+      },
+      {
+        "name": "n_sabotages",
+        "prompt": "How many ways to sabotage should we explore?",
+        "type": "integer",
+        "required": false,
+        "default": 8,
+        "range": [
+          5,
+          12
+        ]
+      }
+    ],
+    "system_prompt": "You are a creative problem-solving expert specializing in reverse thinking. Embrace absurdity and extremes when identifying problems, then find practical solutions.",
+    "user_prompt_template": "Use reverse brainstorming to solve: {problem}",
+    "workflow": {
+      "type": "chain",
+      "chain": {
+        "steps": [
+          {
+            "id": "identify_sabotage",
+            "role": "Saboteur",
+            "system_prompt": "Think like a villain. Identify creative, extreme ways to make problems worse. Be specific and provocative.",
+            "user_prompt": "Problem: {problem}\n\nImagine you WANT to make this problem WORSE. List {n_sabotages} specific ways you could sabotage success or make the situation deteriorate.\n\nBe creative, specific, and extreme. Think about:\n- What behaviors would guarantee failure?\n- What could you eliminate or ignore?\n- What could you add that would hurt?\n- What timings would be worst?\n- What communications would cause chaos?\n\nReturn JSON with this structure: {\"problem\": \"{problem}\", \"sabotages\": [{\"sabotage\": \"specific action to make it worse\", \"why_harmful\": \"why this would damage the situation\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "problem": {
+                  "type": "string"
+                },
+                "sabotages": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "sabotage": {
+                        "type": "string"
+                      },
+                      "why_harmful": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "sabotage",
+                      "why_harmful"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "problem",
+                "sabotages"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "id": "invert_to_solutions",
+            "role": "Inverter",
+            "system_prompt": "Flip negative actions into positive solutions. Maintain the insight while making it constructive.",
+            "user_prompt": "Sabotages identified:\n{step.identify_sabotage.output}\n\nNow INVERT each sabotage into a constructive solution for: {problem}\n\nFor each sabotage, create its opposite - a specific action that would help solve the problem.\n\nExample:\n- Sabotage: \"Never document decisions\" → Solution: \"Create a shared decision log updated after every meeting\"\n- Sabotage: \"Ignore customer feedback\" → Solution: \"Weekly customer feedback review with action items\"\n\nReturn JSON with this structure: {\"inverted_solutions\": [{\"original_sabotage\": \"the harmful action\", \"solution\": \"the inverted positive action\", \"rationale\": \"why this solution addresses the problem\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "inverted_solutions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "original_sabotage": {
+                        "type": "string"
+                      },
+                      "solution": {
+                        "type": "string"
+                      },
+                      "rationale": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "original_sabotage",
+                      "solution",
+                      "rationale"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "inverted_solutions"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "id": "prioritize_enhancements",
+            "role": "Strategic Prioritizer",
+            "system_prompt": "Evaluate solutions for impact and feasibility. Provide actionable implementation guidance.",
+            "user_prompt": "Inverted solutions:\n{step.invert_to_solutions.output}\n\nPrioritize the TOP 5 solutions based on:\n1. Impact on solving {problem}\n2. Feasibility of implementation\n3. Speed to value\n\nFor each top solution, provide:\n- Clear title\n- Why it's high-priority\n- Concrete first steps (2-3 actions)\n- Success metrics\n- Potential obstacles\n\nReturn JSON with this structure: {\"developed_concepts\": [{\"title\": \"solution name\", \"priority_score\": \"1-5\", \"why_priority\": \"rationale for ranking\", \"first_steps\": [\"action1\", \"action2\"], \"success_metrics\": [\"metric1\", \"metric2\"], \"obstacles\": \"potential challenges\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "developed_concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "priority_score": {
+                        "type": "string"
+                      },
+                      "why_priority": {
+                        "type": "string"
+                      },
+                      "first_steps": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "success_metrics": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "obstacles": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "priority_score",
+                      "why_priority",
+                      "first_steps",
+                      "success_metrics",
+                      "obstacles"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 5,
+                  "maxItems": 5
+                }
+              },
+              "required": [
+                "developed_concepts"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    },
+    "meta": {
+      "complexity": "beginner",
+      "time_estimate": "4-7 minutes",
+      "tags": [
+        "reverse_thinking",
+        "problem_solving",
+        "inversion",
+        "creative"
+      ],
+      "works_well_with": [
+        "starbursting",
+        "rapid_ideation"
+      ]
+    },
+    "ui_preferences": {
+      "render_as_markdown": false
+    }
+  },
+  {
+    "id": "rapid_ideation",
+    "name": "Rapid Ideation",
+    "description": "Generate a high volume of ideas quickly, then filter and refine the most promising ones",
+    "methodology": {
+      "overview": "Rapid Ideation is a three-phase brainstorming technique that emphasizes quantity over quality in the initial phase, followed by strategic filtering and refinement.",
+      "value": "By generating a large volume of ideas first without self-censoring, you access more creative and unconventional solutions. The filtering phase then identifies the strongest candidates, and the final phase develops them into actionable concepts.",
+      "process": "Step 1 generates 15-50 raw ideas rapidly. Step 2 clusters similar ideas and identifies the top candidates based on novelty, feasibility, and impact. Step 3 develops the selected ideas into fully-formed concepts with implementation details."
+    },
+    "inputs": [
+      {
+        "name": "challenge",
+        "prompt": "What challenge or opportunity are you ideating on?",
+        "type": "text",
+        "required": true,
+        "examples": [
+          "Ways to reduce customer churn",
+          "New features for our mobile app",
+          "Team building activities",
+          "Content ideas for social media"
+        ]
+      },
+      {
+        "name": "quantity",
+        "prompt": "How many initial ideas should we generate?",
+        "type": "integer",
+        "required": false,
+        "default": 20,
+        "range": [
+          15,
+          50
+        ]
+      },
+      {
+        "name": "final_count",
+        "prompt": "How many top ideas to develop?",
+        "type": "integer",
+        "required": false,
+        "default": 5,
+        "range": [
+          3,
+          10
+        ]
+      }
+    ],
+    "system_prompt": "You are an expert facilitator specializing in rapid ideation. Prioritize quantity over quality initially, then apply rigorous filtering.",
+    "user_prompt_template": "Generate rapid ideas for: {challenge}",
+    "workflow": {
+      "type": "chain",
+      "chain": {
+        "steps": [
+          {
+            "id": "generate_flood",
+            "role": "Idea Generator",
+            "system_prompt": "Generate ideas at high speed. Embrace wild ideas, variations, and combinations. No self-censoring. Quantity is king.",
+            "user_prompt": "Challenge: {challenge}\n\nGenerate {quantity} diverse ideas as FAST as possible. Mix practical and wild ideas. Don't overthink - just generate!\n\nRules:\n- One idea per entry\n- Brief descriptions (1-2 sentences max)\n- Embrace variety: incremental improvements, radical innovations, silly ideas, obvious ideas, complex ideas, simple ideas\n- Don't filter for feasibility yet\n- Aim for breadth over depth\n\nReturn JSON with this structure: {\"challenge\": \"{challenge}\", \"raw_ideas\": [{\"idea\": \"brief idea description\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "challenge": {
+                  "type": "string"
+                },
+                "raw_ideas": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "idea": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "idea"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "challenge",
+                "raw_ideas"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "id": "filter_cluster",
+            "role": "Idea Curator",
+            "system_prompt": "Analyze ideas for novelty, feasibility, and impact. Group similar concepts. Be discerning but fair.",
+            "user_prompt": "Raw ideas generated:\n{step.generate_flood.output}\n\nAnalyze these ideas and:\n1. Group similar/related ideas into clusters\n2. Identify the {final_count} most promising ideas based on:\n   - Novelty (how unique/creative)\n   - Feasibility (can it be done)\n   - Impact (potential value)\n   - Clarity (how well-defined)\n\nFor each top idea, note:\n- Why it stands out\n- Which cluster it belongs to\n- Its strength rating (1-10)\n\nReturn JSON with this structure: {\"clusters\": [{\"theme\": \"cluster name\", \"idea_count\": number}], \"top_ideas\": [{\"idea\": \"the idea\", \"cluster\": \"cluster name\", \"why_promising\": \"explanation\", \"strength_rating\": \"1-10\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "clusters": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "theme": {
+                        "type": "string"
+                      },
+                      "idea_count": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "theme",
+                      "idea_count"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "top_ideas": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "idea": {
+                        "type": "string"
+                      },
+                      "cluster": {
+                        "type": "string"
+                      },
+                      "why_promising": {
+                        "type": "string"
+                      },
+                      "strength_rating": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "idea",
+                      "cluster",
+                      "why_promising",
+                      "strength_rating"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "clusters",
+                "top_ideas"
+              ],
+              "additionalProperties": false
+            }
+          },
+          {
+            "id": "format_output",
+            "role": "Concept Developer",
+            "system_prompt": "Transform filtered ideas into actionable concepts with clear next steps.",
+            "user_prompt": "Top ideas selected:\n{step.filter_cluster.output}\n\nFor each top idea, develop it into a full concept:\n\n1. **Title**: Catchy, descriptive name\n2. **One-liner**: Elevator pitch (1 sentence)\n3. **Description**: What it is and how it works (2-3 sentences)\n4. **Why it matters**: Value proposition\n5. **Quick win**: Smallest version to test the idea\n6. **Effort estimate**: Low/Medium/High\n7. **Next step**: Immediate action to take\n\nReturn JSON with this structure: {\"developed_concepts\": [{\"title\": \"idea name\", \"one_liner\": \"elevator pitch\", \"description\": \"detailed explanation\", \"why_it_matters\": \"value proposition\", \"quick_win\": \"minimal viable version\", \"effort_estimate\": \"low|medium|high\", \"next_step\": \"immediate action\", \"strength_rating\": \"from previous step\"}]}",
+            "response_schema": {
+              "type": "object",
+              "properties": {
+                "developed_concepts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "one_liner": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "why_it_matters": {
+                        "type": "string"
+                      },
+                      "quick_win": {
+                        "type": "string"
+                      },
+                      "effort_estimate": {
+                        "type": "string",
+                        "enum": [
+                          "low",
+                          "medium",
+                          "high"
+                        ]
+                      },
+                      "next_step": {
+                        "type": "string"
+                      },
+                      "strength_rating": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "one_liner",
+                      "description",
+                      "why_it_matters",
+                      "quick_win",
+                      "effort_estimate",
+                      "next_step",
+                      "strength_rating"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "developed_concepts"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    },
+    "meta": {
+      "complexity": "beginner",
+      "time_estimate": "4-8 minutes",
+      "tags": [
+        "brainstorming",
+        "high_volume",
+        "filtering",
+        "quick"
+      ],
+      "works_well_with": [
+        "reverse_brainstorming",
         "crazy_8s"
       ]
     },
